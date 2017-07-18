@@ -548,6 +548,7 @@
     <module>app/oryx-app</module>
     <module>app/oryx-app-serving</module>
     <module>app/example</module>
+    <module>app/lambda-app</module>
     <module>deploy/oryx-batch</module>
     <module>deploy/oryx-speed</module>
     <module>deploy/oryx-serving</module>
@@ -995,6 +996,10 @@
             <group>
               <title>Example App</title>
               <packages>com.cloudera.oryx.example*</packages>
+            </group>
+            <group>
+              <title>Lambda App</title>
+              <packages>com.cloudera.oryx.lambda-app*</packages>
             </group>
             <group>
               <title>Lambda Tier</title>

@@ -13,22 +13,21 @@
  * License.
  */
 
-package com.cloudera.oryx.example.batch;
+package com.cloudera.oryx.lambda_app.batch;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
+import com.cloudera.oryx.api.TopicProducer;
+import com.cloudera.oryx.api.batch.BatchLayerUpdate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
-import com.cloudera.oryx.api.TopicProducer;
-import com.cloudera.oryx.api.batch.BatchLayerUpdate;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Input keys are ignored. Values are treated as lines of space-separated text. The job
@@ -45,6 +44,8 @@ public final class ExampleBatchLayerUpdate implements BatchLayerUpdate<String,St
                         JavaPairRDD<String,String> pastData,
                         String modelDirString,
                         TopicProducer<String,String> modelUpdateTopic) throws IOException {
+
+    // new data is joined with past data, if there is any
     JavaPairRDD<String,String> allData = pastData == null ? newData : newData.union(pastData);
     String modelString;
     try {

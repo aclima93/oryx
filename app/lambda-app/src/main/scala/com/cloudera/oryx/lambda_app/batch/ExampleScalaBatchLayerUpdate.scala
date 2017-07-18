@@ -13,7 +13,7 @@
  * License.
  */
 
-package com.cloudera.oryx.example.batch
+package com.cloudera.oryx.lambda_app.batch
 
 import scala.collection.JavaConverters._
 import scala.collection.Map

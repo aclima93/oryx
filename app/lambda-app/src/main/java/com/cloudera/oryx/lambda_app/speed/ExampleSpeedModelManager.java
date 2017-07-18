@@ -13,7 +13,7 @@
  * License.
  */
 
-package com.cloudera.oryx.example.speed;
+package com.cloudera.oryx.lambda_app.speed;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 
 import com.cloudera.oryx.api.speed.AbstractSpeedModelManager;
-import com.cloudera.oryx.example.batch.ExampleBatchLayerUpdate;
+import com.cloudera.oryx.lambda_app.batch.ExampleBatchLayerUpdate;
 
 /**
  * Also counts and emits counts of number of distinct words that occur with words.
