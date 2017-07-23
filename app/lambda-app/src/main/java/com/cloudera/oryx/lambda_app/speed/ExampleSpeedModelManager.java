@@ -15,17 +15,17 @@
 
 package com.cloudera.oryx.lambda_app.speed;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
+import com.cloudera.oryx.api.speed.AbstractSpeedModelManager;
+import com.cloudera.oryx.lambda_app.batch.ExampleBatchLayerUpdate;
+import com.cloudera.oryx.lambda_app.message_objects.Measurement;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.api.java.JavaPairRDD;
 
-import com.cloudera.oryx.api.speed.AbstractSpeedModelManager;
-import com.cloudera.oryx.lambda_app.batch.ExampleBatchLayerUpdate;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Also counts and emits counts of number of distinct words that occur with words.
@@ -36,17 +36,17 @@ import com.cloudera.oryx.lambda_app.batch.ExampleBatchLayerUpdate;
  */
 public final class ExampleSpeedModelManager extends AbstractSpeedModelManager<String,String,String> {
 
-  private final Map<String,Integer> distinctOtherWords = new HashMap<>();
+  private final Map<Measurement,Integer> distinctMeasurements = new HashMap<>();
 
   @Override
   public void consumeKeyMessage(String key, String message, Configuration hadoopConf) throws IOException {
     switch (key) {
       case "MODEL":
         @SuppressWarnings("unchecked")
-        Map<String,Integer> model = (Map<String,Integer>) new ObjectMapper().readValue(message, Map.class);
-        synchronized (distinctOtherWords) {
-          distinctOtherWords.clear();
-          model.forEach(distinctOtherWords::put);
+        Map<Measurement,Integer> model = (Map<Measurement,Integer>) new ObjectMapper().readValue(message, Map.class);
+        synchronized (distinctMeasurements) {
+          distinctMeasurements.clear();
+          model.forEach(distinctMeasurements::put);
         }
         break;
       case "UP":
@@ -60,15 +60,15 @@ public final class ExampleSpeedModelManager extends AbstractSpeedModelManager<St
   @Override
   public Iterable<String> buildUpdates(JavaPairRDD<String,String> newData) {
     return ExampleBatchLayerUpdate.countDistinctMeasurements(newData).entrySet().stream().map(entry -> {
-      String word = entry.getKey();
+      Measurement measurement = entry.getKey();
       int count = entry.getValue();
       int newCount;
-      synchronized (distinctOtherWords) {
-        Integer oldCount = distinctOtherWords.get(word);
+      synchronized (distinctMeasurements) {
+        Integer oldCount = distinctMeasurements.get(measurement);
         newCount = oldCount == null ? count : oldCount + count;
-        distinctOtherWords.put(word, newCount);
+        distinctMeasurements.put(measurement, newCount);
       }
-      return word + "," + newCount;
+      return measurement + "," + newCount;
     }).collect(Collectors.toList());
   }
 

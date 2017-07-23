@@ -17,7 +17,13 @@ package com.cloudera.oryx.lambda_app.batch;
 
 import com.cloudera.oryx.api.TopicProducer;
 import com.cloudera.oryx.api.batch.BatchLayerUpdate;
-import com.cloudera.oryx.lambda_app.message_objects.*;
+import com.cloudera.oryx.lambda_app.message_objects.DeviceMessage;
+import com.cloudera.oryx.lambda_app.message_objects.EventfulAggregatedMeasurement;
+import com.cloudera.oryx.lambda_app.message_objects.EventfulMeasurement;
+import com.cloudera.oryx.lambda_app.message_objects.Measurement;
+import com.cloudera.oryx.lambda_app.message_objects.OneTimeMeasurement;
+import com.cloudera.oryx.lambda_app.message_objects.PeriodicAggregatedMeasurement;
+import com.cloudera.oryx.lambda_app.message_objects.PeriodicMeasurement;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -63,37 +69,48 @@ public final class ExampleBatchLayerUpdate implements BatchLayerUpdate<String,St
   public static Map<Measurement, Integer> countDistinctMeasurements(JavaPairRDD<String,String> data) {
     return data.values().flatMapToPair(line -> {
 
+      // get the message object from the JSON string
       final Gson gson = new Gson();
       DeviceMessage deviceMessage = gson.fromJson(line, DeviceMessage.class);
       Set<Measurement> distinctMeasurements;
+      Type listType;
 
-      if(deviceMessage.getSubtopic().equals("PeriodicMeasurement")) {
-        Type listType = new TypeToken<ArrayList<PeriodicMeasurement>>() {
-        }.getType();
-        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
-      }
-      else if(deviceMessage.getSubtopic().equals("EventfulMeasurement")) {
-        Type listType = new TypeToken<ArrayList<EventfulMeasurement>>() {
-        }.getType();
-        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
-      }
-      else if(deviceMessage.getSubtopic().equals("OneTimeMeasurement")) {
-        Type listType = new TypeToken<ArrayList<OneTimeMeasurement>>() {
-        }.getType();
-        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
-      }
-      else if(deviceMessage.getSubtopic().equals("PeriodicAggregatedMeasurement")) {
-        Type listType = new TypeToken<ArrayList<PeriodicAggregatedMeasurement>>() {
-        }.getType();
-        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
-      }
-      else if(deviceMessage.getSubtopic().equals("EventfulAggregatedMeasurement")) {
-        Type listType = new TypeToken<ArrayList<EventfulAggregatedMeasurement>>() {
-        }.getType();
-        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
-      }
-      else{
-        distinctMeasurements = new HashSet<>();
+      // the payload itself is also a JSON string representing a list of measurements for a particular class/topic
+      switch (deviceMessage.getSubtopic()) {
+
+        case "PeriodicMeasurement":
+          listType = new TypeToken<ArrayList<PeriodicMeasurement>>() {
+          }.getType();
+          distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+          break;
+
+        case "EventfulMeasurement":
+          listType = new TypeToken<ArrayList<EventfulMeasurement>>() {
+          }.getType();
+          distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+          break;
+
+        case "OneTimeMeasurement":
+          listType = new TypeToken<ArrayList<OneTimeMeasurement>>() {
+          }.getType();
+          distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+          break;
+
+        case "PeriodicAggregatedMeasurement":
+          listType = new TypeToken<ArrayList<PeriodicAggregatedMeasurement>>() {
+          }.getType();
+          distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+          break;
+
+        case "EventfulAggregatedMeasurement":
+          listType = new TypeToken<ArrayList<EventfulAggregatedMeasurement>>() {
+          }.getType();
+          distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+          break;
+
+        default:
+          distinctMeasurements = new HashSet<>();
+          break;
       }
 
       return distinctMeasurements.stream().flatMap(a ->
