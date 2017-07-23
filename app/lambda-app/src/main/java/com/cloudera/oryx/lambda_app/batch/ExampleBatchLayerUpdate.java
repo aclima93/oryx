@@ -17,14 +17,18 @@ package com.cloudera.oryx.lambda_app.batch;
 
 import com.cloudera.oryx.api.TopicProducer;
 import com.cloudera.oryx.api.batch.BatchLayerUpdate;
+import com.cloudera.oryx.lambda_app.message_objects.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -49,18 +53,51 @@ public final class ExampleBatchLayerUpdate implements BatchLayerUpdate<String,St
     JavaPairRDD<String,String> allData = pastData == null ? newData : newData.union(pastData);
     String modelString;
     try {
-      modelString = new ObjectMapper().writeValueAsString(countDistinctOtherWords(allData));
+      modelString = new ObjectMapper().writeValueAsString(countDistinctMeasurements(allData));
     } catch (JsonProcessingException jpe) {
       throw new IOException(jpe);
     }
     modelUpdateTopic.send("MODEL", modelString);
   }
 
-  public static Map<String,Integer> countDistinctOtherWords(JavaPairRDD<String,String> data) {
+  public static Map<Measurement, Integer> countDistinctMeasurements(JavaPairRDD<String,String> data) {
     return data.values().flatMapToPair(line -> {
-      Set<String> distinctTokens = new HashSet<>(Arrays.asList(line.split(" ")));
-      return distinctTokens.stream().flatMap(a ->
-              distinctTokens.stream().filter(b -> !a.equals(b)).map(b -> new Tuple2<>(a, b))
+
+      final Gson gson = new Gson();
+      DeviceMessage deviceMessage = gson.fromJson(line, DeviceMessage.class);
+      Set<Measurement> distinctMeasurements;
+
+      if(deviceMessage.getSubtopic().equals("PeriodicMeasurement")) {
+        Type listType = new TypeToken<ArrayList<PeriodicMeasurement>>() {
+        }.getType();
+        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+      }
+      else if(deviceMessage.getSubtopic().equals("EventfulMeasurement")) {
+        Type listType = new TypeToken<ArrayList<EventfulMeasurement>>() {
+        }.getType();
+        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+      }
+      else if(deviceMessage.getSubtopic().equals("OneTimeMeasurement")) {
+        Type listType = new TypeToken<ArrayList<OneTimeMeasurement>>() {
+        }.getType();
+        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+      }
+      else if(deviceMessage.getSubtopic().equals("PeriodicAggregatedMeasurement")) {
+        Type listType = new TypeToken<ArrayList<PeriodicAggregatedMeasurement>>() {
+        }.getType();
+        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+      }
+      else if(deviceMessage.getSubtopic().equals("EventfulAggregatedMeasurement")) {
+        Type listType = new TypeToken<ArrayList<EventfulAggregatedMeasurement>>() {
+        }.getType();
+        distinctMeasurements = new HashSet<>(gson.fromJson(deviceMessage.getPayload(), listType));
+      }
+      else{
+        distinctMeasurements = new HashSet<>();
+      }
+
+      return distinctMeasurements.stream().flatMap(a ->
+              distinctMeasurements.stream().filter(b -> !a.equals(b)).map(b -> new Tuple2<>(a, b))
       ).iterator();
     }).distinct().mapValues(a -> 1).reduceByKey((c1, c2) -> c1 + c2).collectAsMap();
   }

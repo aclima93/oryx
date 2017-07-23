@@ -23,6 +23,17 @@
 
   <dependencyManagement>
     <dependencies>
+
+      <!-- added dependencies -->
+      <dependency>
+        <!--  Gson: Java to Json conversion -->
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>2.2.4</version>
+        <scope>compile</scope>
+      </dependency>
+
+      <!-- already existing dependencies -->
       <dependency>
         <groupId>com.cloudera.oryx</groupId>
         <artifactId>oryx-api</artifactId>

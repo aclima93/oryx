@@ -59,7 +59,7 @@ public final class ExampleSpeedModelManager extends AbstractSpeedModelManager<St
 
   @Override
   public Iterable<String> buildUpdates(JavaPairRDD<String,String> newData) {
-    return ExampleBatchLayerUpdate.countDistinctOtherWords(newData).entrySet().stream().map(entry -> {
+    return ExampleBatchLayerUpdate.countDistinctMeasurements(newData).entrySet().stream().map(entry -> {
       String word = entry.getKey();
       int count = entry.getValue();
       int newCount;
