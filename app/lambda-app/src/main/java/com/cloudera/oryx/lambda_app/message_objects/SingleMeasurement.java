@@ -23,24 +23,12 @@ public class SingleMeasurement extends Measurement {
         return value;
     }
 
-    public void setValue(String value) {
-        this.value = value;
-    }
-
     public String getUnitsOfMeasurement() {
         return unitsOfMeasurement;
     }
 
-    public void setUnitsOfMeasurement(String unitsOfMeasurement) {
-        this.unitsOfMeasurement = unitsOfMeasurement;
-    }
-
     public Date getTimestamp() {
         return timestamp;
-    }
-
-    public void setTimestamp(Date timestamp) {
-        this.timestamp = timestamp;
     }
 
 }

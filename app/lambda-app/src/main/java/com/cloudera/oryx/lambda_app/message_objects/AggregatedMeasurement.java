@@ -21,16 +21,8 @@ public class AggregatedMeasurement extends Measurement {
         return sampleStartTime;
     }
 
-    public void setSampleStartTime(Date sampleStartTime) {
-        this.sampleStartTime = sampleStartTime;
-    }
-
     public Date getSampleEndTime() {
         return sampleEndTime;
-    }
-
-    public void setSampleEndTime(Date sampleEndTime) {
-        this.sampleEndTime = sampleEndTime;
     }
 
 }

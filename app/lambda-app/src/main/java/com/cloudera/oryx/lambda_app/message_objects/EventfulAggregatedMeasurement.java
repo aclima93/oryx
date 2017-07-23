@@ -20,7 +20,4 @@ public class EventfulAggregatedMeasurement extends AggregatedMeasurement{
         return numberOfEvents;
     }
 
-    public void setNumberOfEvents(Integer numberOfEvents) {
-        this.numberOfEvents = numberOfEvents;
-    }
 }

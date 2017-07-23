@@ -24,23 +24,12 @@ public class PeriodicAggregatedMeasurement extends AggregatedMeasurement{
         return harmonicValue;
     }
 
-    public void setHarmonicValue(Double harmonicValue) {
-        this.harmonicValue = harmonicValue;
-    }
-
     public Double getMedianValue() {
         return medianValue;
-    }
-
-    public void setMedianValue(Double medianValue) {
-        this.medianValue = medianValue;
     }
 
     public String getUnitsOfMeasurement() {
         return unitsOfMeasurement;
     }
 
-    public void setUnitsOfMeasurement(String unitsOfMeasurement) {
-        this.unitsOfMeasurement = unitsOfMeasurement;
-    }
 }
