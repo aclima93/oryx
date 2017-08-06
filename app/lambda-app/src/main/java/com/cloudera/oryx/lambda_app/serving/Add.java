@@ -15,30 +15,29 @@
 
 package com.cloudera.oryx.lambda_app.serving;
 
+import com.cloudera.oryx.api.TopicProducer;
+import com.cloudera.oryx.api.serving.OryxResource;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import com.cloudera.oryx.api.TopicProducer;
-import com.cloudera.oryx.api.serving.OryxResource;
-
 /**
- * Responds to a POST request to {@code /add/[line]}. Adds a new line of input for processing.
+ * Responds to a POST request to {@code /add/[DeviceMessage]}. Adds a new line of input for processing.
  * Also responds to a POST to {@code /add} which contains lines in the request body.
  */
 @Path("/add")
 public final class Add extends OryxResource {
 
   @POST
-  @Path("{line}")
-  public void add(@PathParam("line") String line) {
-    getProducer().send(null, line);
+  @Path("{DeviceMessage}")
+  public void add(@PathParam("DeviceMessage") String deviceMessage) {
+    getProducer().send(null, deviceMessage);
   }
 
   @POST

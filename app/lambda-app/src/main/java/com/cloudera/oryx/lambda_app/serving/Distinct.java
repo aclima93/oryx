@@ -15,6 +15,9 @@
 
 package com.cloudera.oryx.lambda_app.serving;
 
+import com.cloudera.oryx.api.serving.OryxResource;
+import com.cloudera.oryx.api.serving.OryxServingException;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -23,13 +26,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Map;
 
-import com.cloudera.oryx.api.serving.OryxResource;
-import com.cloudera.oryx.api.serving.OryxServingException;
-
 /**
- * Responds to a GET request to {@code /distinct}. Returns all distinct words and their count.
- * Responds to a GET request to {@code /distinct/[word]} as well to get the count for one word. If the
- * word's count is unknown, returns an HTTP {@link Response.Status#BAD_REQUEST} error response.
+ * Responds to a GET request to {@code /distinct}. Returns all distinct deviceMessages and their count.
+ * Responds to a GET request to {@code /distinct/[deviceMessage]} as well to get the count for one deviceMessage.
+ * If the deviceMessage's count is unknown, returns an HTTP {@link Response.Status#BAD_REQUEST} error response.
  */
 @Path("/distinct")
 public final class Distinct extends OryxResource {
@@ -37,20 +37,20 @@ public final class Distinct extends OryxResource {
   @GET
   @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
   public Map<String,Integer> get() {
-    return getModel().getWords();
+    return getModel().getDistinctDeviceMessages();
   }
 
   @GET
   @Produces({MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON})
-  @Path("{word}")
-  public int get(@PathParam("word") String word) throws OryxServingException {
-    Map<String,Integer> map = getModel().getWords();
+  @Path("{deviceMessage}")
+  public int get(@PathParam("deviceMessage") String deviceMessage) throws OryxServingException {
+    Map<String,Integer> map = getModel().getDistinctDeviceMessages();
     Integer count;
     synchronized (map) {
-      count = map.get(word);
+      count = map.get(deviceMessage);
     }
     if (count == null) {
-      throw new OryxServingException(Response.Status.BAD_REQUEST, "No such word");
+      throw new OryxServingException(Response.Status.BAD_REQUEST, "No such deviceMessage");
     }
     return count;
   }

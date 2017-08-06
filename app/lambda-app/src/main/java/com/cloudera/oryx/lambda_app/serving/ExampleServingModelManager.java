@@ -15,26 +15,26 @@
 
 package com.cloudera.oryx.lambda_app.serving;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.cloudera.oryx.api.serving.AbstractServingModelManager;
+import com.cloudera.oryx.api.serving.ServingModel;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.typesafe.config.Config;
 import org.apache.hadoop.conf.Configuration;
 
-import com.cloudera.oryx.api.serving.AbstractServingModelManager;
-import com.cloudera.oryx.api.serving.ServingModel;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Reads models and updates produced by the Batch Layer and Speed Layer. Models are maps, encoded as JSON
- * strings, mapping words to count of distinct other words that appear with that word in an input line.
- * Updates are "word,count" pairs representing new counts for a word. This class manages and exposes the
- * mapping to the Serving Layer applications.
+ * strings, mapping DeviceMessages to count of distinct other DeviceMessages that appear with that DeviceMessage
+ * in an input line.
+ * Updates are "DeviceMessage,count" pairs representing new counts for a DeviceMessage.
+ * This class manages and exposes the mapping to the Serving Layer applications.
  */
 public final class ExampleServingModelManager extends AbstractServingModelManager<String> {
 
-  private final Map<String,Integer> distinctOtherWords = new HashMap<>();
+  private final Map<String,Integer> distinctDeviceMessages = new HashMap<>();
 
   public ExampleServingModelManager(Config config) {
     super(config);
@@ -46,15 +46,17 @@ public final class ExampleServingModelManager extends AbstractServingModelManage
       case "MODEL":
         @SuppressWarnings("unchecked")
         Map<String,Integer> model = (Map<String,Integer>) new ObjectMapper().readValue(message, Map.class);
-        synchronized (distinctOtherWords) {
-          distinctOtherWords.clear();
-          model.forEach(distinctOtherWords::put);
+        synchronized (distinctDeviceMessages) {
+          distinctDeviceMessages.clear();
+          model.forEach(distinctDeviceMessages::put);
         }
         break;
       case "UP":
-        String[] wordCount = message.split(",");
-        synchronized (distinctOtherWords) {
-          distinctOtherWords.put(wordCount[0], Integer.valueOf(wordCount[1]));
+        String[] measurementCount = message.split(",");
+        String deviceMessage = measurementCount[0];
+        String count = measurementCount[1];
+        synchronized (distinctDeviceMessages) {
+          distinctDeviceMessages.put(deviceMessage, Integer.valueOf(count));
         }
         break;
       default:
@@ -64,7 +66,7 @@ public final class ExampleServingModelManager extends AbstractServingModelManage
 
   @Override
   public ServingModel getModel() {
-    return new ExampleServingModel(distinctOtherWords);
+    return new ExampleServingModel(distinctDeviceMessages);
   }
 
 }

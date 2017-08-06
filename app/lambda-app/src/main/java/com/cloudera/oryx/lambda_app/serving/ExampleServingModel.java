@@ -15,19 +15,19 @@
 
 package com.cloudera.oryx.lambda_app.serving;
 
-import java.util.Map;
-
 import com.cloudera.oryx.api.serving.ServingModel;
+
+import java.util.Map;
 
 /**
  * {@link ServingModel} produced by {@link ExampleServingModelManager}.
  */
 public final class ExampleServingModel implements ServingModel {
 
-  private final Map<String,Integer> distinctOtherWords;
+  private final Map<String,Integer> distinctDeviceMessages;
 
-  ExampleServingModel(Map<String,Integer> distinctOtherWords) {
-    this.distinctOtherWords = distinctOtherWords;
+  ExampleServingModel(Map<String,Integer> distinctDeviceMessages) {
+    this.distinctDeviceMessages = distinctDeviceMessages;
   }
 
   @Override
@@ -35,8 +35,8 @@ public final class ExampleServingModel implements ServingModel {
     return 1.0f;
   }
 
-  public Map<String,Integer> getWords() {
-    return distinctOtherWords;
+  public Map<String,Integer> getDistinctDeviceMessages() {
+    return distinctDeviceMessages;
   }
 
 }
