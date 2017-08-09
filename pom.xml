@@ -26,11 +26,18 @@
 
       <!-- added dependencies -->
       <dependency>
-        <!--  Gson: Java to Json conversion -->
+        <!-- Gson: Java to Json conversion -->
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
         <version>2.2.4</version>
         <scope>compile</scope>
+      </dependency>
+      <dependency>
+        <!-- Spark GraphX -->
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-core_2.11</artifactId>
+        <version>2.2.0</version>
+        <scope>provided</scope>
       </dependency>
 
       <!-- already existing dependencies -->
