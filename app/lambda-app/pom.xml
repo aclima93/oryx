@@ -59,6 +59,27 @@
       <version>1.1.2</version>
       <type>pom</type>
     </dependency>
+    <!-- added dependencies -->
+    <dependency>
+      <!-- Gson: Java to Json conversion -->
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.2.4</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <!-- Spark GraphX -->
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-graphx_${scala.minor.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <!-- ML Sparkling -->
+      <groupId>ml.sparkling</groupId>
+      <artifactId>sparkling-graph-api_${scala.minor.version}</artifactId>
+      <version>0.0.7</version>
+    </dependency>
   </dependencies>
 
   <properties>
