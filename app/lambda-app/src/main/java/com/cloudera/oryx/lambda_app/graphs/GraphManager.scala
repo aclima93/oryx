@@ -99,5 +99,22 @@ object GraphManager {
   val gg = graph.mapEdges(e => 50.toDouble + e.attr.toDouble / 20)
   val initialGraph = gg.mapVertices((id, _) => if (id == sourceId) 0.0 else Double.PositiveInfinity)
 
+  // TODO: number of messages sent
+  // TODO: Average message type
+  // TODO: least common message type
+  // TODO: most common message type
+
+  // TODO: number of messages sent by message type
+  // TODO: Average message value by message type
+  // TODO: least common message value by message type
+  // TODO: most common message value by message type
+
+  // TODO: number of messages sent by each device, by message type
+  // TODO: Average message value by each device, by message type
+  // TODO: least common message value by each device, by message type
+  // TODO: most common message value by each device, by message type
+
+  // TODO: number of devices in each K-mean
+  // TODO: which devices are in each k-mean
 
 }
