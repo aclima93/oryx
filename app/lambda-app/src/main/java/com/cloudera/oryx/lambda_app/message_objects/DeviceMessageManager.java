@@ -5,12 +5,11 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
 
 public class DeviceMessageManager {
 
-    public Set<Measurement> getDistinctMeasurementsFromDeviceMessageJSON(String deviceMessageJSON){
+    public HashMap<Measurement, Integer> getDistinctMeasurementsFromDeviceMessageJSON(String deviceMessageJSON){
 
         // get the message object
         DeviceMessage deviceMessage;
@@ -30,20 +29,37 @@ public class DeviceMessageManager {
         return getMeasurementsFromDeviceMessage(deviceMessage);
     }
 
-    private DeviceMessage getDeviceMessageFromDeviceMessageJson(String deviceMessageJSON){
+    public DeviceMessage getDeviceMessageFromDeviceMessageJson(String deviceMessageJSON){
 
         // get the message object from the JSON string
         final Gson gson = new Gson();
         return gson.fromJson(deviceMessageJSON, DeviceMessage.class);
     }
 
-    private Set<Measurement> getDistinctMeasurementsFromDeviceMessage(DeviceMessage deviceMessage){
+    private HashMap<Measurement,Integer> measurementArrayListToOccurrenceHashMap(ArrayList<Measurement> measurements){
+        HashMap<Measurement,Integer> occurrenceHashMap = new HashMap<>();
+
+        for(Measurement measurement : measurements){
+
+            if( !occurrenceHashMap.containsKey(measurement) ){
+                // object not yet in hashmap
+                occurrenceHashMap.put(measurement, 1);
+            }
+            else{
+                // increment occurrence counter
+                occurrenceHashMap.put(measurement, occurrenceHashMap.get(measurement) + 1 );
+            }
+        }
+        return occurrenceHashMap;
+    }
+
+    private HashMap<Measurement, Integer> getDistinctMeasurementsFromDeviceMessage(DeviceMessage deviceMessage){
 
         // get the measurements ArrayList
         ArrayList<Measurement> measurements = getMeasurementsFromDeviceMessage(deviceMessage);
 
         // return the distinct measurements Set
-        return new HashSet<>(measurements);
+        return measurementArrayListToOccurrenceHashMap(measurements);
     }
 
     private ArrayList<Measurement> getMeasurementsFromDeviceMessage(DeviceMessage deviceMessage){

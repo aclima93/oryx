@@ -1,49 +1,47 @@
 package com.cloudera.oryx.lambda_app.graphs
 
+import com.cloudera.oryx.lambda_app.message_objects.{DeviceMessage, DeviceMessageManager}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.util.IntParam
-import org.apache.spark.graphx.Edge
-import org.apache.spark.graphx.Graph
+import org.apache.spark.graphx.{Edge, Graph, VertexId}
 import org.apache.spark.util.StatCounter
 
 object GraphManager {
 
-  def parseFlight(str: String): Flight = {
-    val line = str.split(",")
-    Flight(line(0), line(1), line(2), line(3), line(4).toInt, line(5).toLong,
-      line(6), line(7).toLong, line(8), line(9).toDouble, line(10).toDouble,
-      line(11).toDouble, line(12).toDouble, line(13).toDouble, line(14).toDouble, line(15).toDouble, line(16).toInt)
+  def parseDeviceMessage(line: String): DeviceMessage = {
+    new DeviceMessageManager().getDeviceMessageFromDeviceMessageJson(line)
   }
-  val conf = new SparkConf().setAppName("SparkDFebay")
+
+  val conf = new SparkConf().setAppName("SparkGraphXDeviceMessage")
   val sc = new SparkContext(conf)
   //Create RDD with the January 2014 data
   val textRDD = sc.textFile("/user/user01/data/rita2014jan.csv")
 
-  val flightsRDD = textRDD.map(parseFlight).cache()
+  val deviceMessagesRDD = textRDD.map(parseDeviceMessage).cache()
 
-  val airports = flightsRDD.map(flight => (flight.org_id, flight.origin)).distinct
-  airports.take(1)
+  val devices = deviceMessagesRDD.map(deviceMessage => deviceMessage.getDeviceId).distinct
+  val messageTypes = deviceMessagesRDD.map(deviceMessage => deviceMessage.getSubtopic).distinct
 
-  // Defining a default vertex called nowhere
-  val nowhere = "nowhere"
+  // Defining a default vertex called for undefined devices
+  val undefined = "undefined"
 
-  val routes = flightsRDD.map(flight => ((flight.org_id, flight.dest_id), flight.dist)).distinct
-
-  routes.cache
+  /*
+  val subtopics = deviceMessagesRDD.map(deviceMessage => (deviceMessage.getDeviceId, deviceMessage.getSubtopic)).distinct
+  subtopics.cache
 
   // AirportID is numerical - Mapping airport ID to the 3-letter code
-  val airportMap = airports.map { case ((org_id), name) => (org_id -> name) }.collect.toList.toMap
+  val deviceMap = devices.collect.toList.toMap
 
   //airportMap: scala.collection.immutable.Map[Long,String] = Map(13024 -> LMT, 10785 -> BTV, 14574 -> ROA, 14057 -> PDX, 13933 -> ORH, 11898 -> GFK, 14709 -> SCC, 15380 -> TVC,
 
-  // Defining the routes as edges
-  val edges = routes.map { case ((org_id, dest_id), distance) => Edge(org_id.toLong, dest_id.toLong, distance) }
+  // Defining the subtopics as edges
+  val edges = subtopics.map { case ((org_id, dest_id), distance) => Edge(org_id.toLong, dest_id.toLong, distance) }
 
-  //Defining the Graph
-  val graph = Graph(airports, edges, nowhere)
+  // Defining the Graph
+  val graph = Graph(devices, edges, undefined)
 
-  // LNumber of airports
+  // Number of airports
   val numairports = graph.numVertices
 
   graph.vertices.take(2)
@@ -53,7 +51,7 @@ object GraphManager {
   graph.edges.filter { case (Edge(org_id, dest_id, distance)) => distance > 1000 }.take(3)
   // res9: Array[org.apache.spark.graphx.Edge[Int]] = Array(Edge(10140,10397,1269), Edge(10140,10821,1670), Edge(10140,12264,1628))
 
-  // Number of routes
+  // Number of subtopics
   val numroutes = graph.numEdges
 
   // The EdgeTriplet class extends the Edge class by adding the srcAttr and dstAttr members which contain the source and destination properties respectively.
@@ -74,18 +72,18 @@ object GraphManager {
 
   // we can compute the in-degree of each vertex (defined in GraphOps) by the following:
   // which airport has the most incoming flights?
-  graph.inDegrees.collect.sortWith(_._2 > _._2).map(x => (airportMap(x._1), x._2))
+  graph.inDegrees.collect.sortWith(_._2 > _._2).map(x => (deviceMap(x._1), x._2))
   //res46: Array[(String, Int)] = Array((ATL,152), (ORD,145), (DFW,143), (DEN,132), (IAH,107), (MSP,96), (LAX,82), (EWR,82), (DTW,81), (SLC,80),
-  graph.outDegrees.join(airports).sortBy(_._2._1, ascending = false).take(1)
-  val maxout = graph.outDegrees.join(airports).sortBy(_._2._1, ascending = false).take(3)
+  graph.outDegrees.join(devices).sortBy(_._2._1, ascending = false).take(1)
+  val maxout = graph.outDegrees.join(devices).sortBy(_._2._1, ascending = false).take(3)
   //res46: Array[(String, Int)] = Array((ATL,152), (ORD,145), (DFW,143), (DEN,132), (IAH,107), (MSP,96), (LAX,82), (EWR,82), (DTW,81), (SLC,80),
-  val maxIncoming = graph.inDegrees.collect.sortWith(_._2 > _._2).map(x => (airportMap(x._1), x._2)).take(3)
+  val maxIncoming = graph.inDegrees.collect.sortWith(_._2 > _._2).map(x => (deviceMap(x._1), x._2)).take(3)
   maxIncoming.foreach(println)
 
 
   maxout.foreach(println)
 
-  val maxOutgoing = graph.outDegrees.collect.sortWith(_._2 > _._2).map(x => (airportMap(x._1), x._2)).take(3)
+  val maxOutgoing = graph.outDegrees.collect.sortWith(_._2 > _._2).map(x => (deviceMap(x._1), x._2)).take(3)
   maxOutgoing.foreach(println)
 
   // What are the top 10 flights from airport to airport?
@@ -98,6 +96,7 @@ object GraphManager {
 
   val gg = graph.mapEdges(e => 50.toDouble + e.attr.toDouble / 20)
   val initialGraph = gg.mapVertices((id, _) => if (id == sourceId) 0.0 else Double.PositiveInfinity)
+  */
 
   // TODO: number of messages sent
   // TODO: Average message type
